@@ -7,6 +7,8 @@ public class AIWaypointDriver2D : MonoBehaviour
     public float lookAhead = 0f; // for now default to 0 to get more accurate pathfinding 
     public float passRadius = 1.2f;
     public float cornerSlowdown = 0.6f; // 0..1
+    [Tooltip("Increase AI max speed by this amount every time it completes a lap")]
+    public float speedIncreasePerLap = 0f;
 
     [Range(0f,15f)] public float angleDeadZone = 3f;   // degrees
 
@@ -16,6 +18,14 @@ public class AIWaypointDriver2D : MonoBehaviour
     SimpleCarMotor2D motor; int current;
 
     void Awake() { motor = GetComponent<SimpleCarMotor2D>(); }
+    void OnEnable() { LapCounter.AILapIncremented += HandleAILap; }
+    void OnDisable() { LapCounter.AILapIncremented -= HandleAILap; }
+
+    void HandleAILap()
+    {
+        if (motor != null && speedIncreasePerLap != 0f)
+            motor.maxSpeed += speedIncreasePerLap;
+    }
     void Start() { if (path && path.Count > 0) current = path.NearestIndex(transform.position); }
 
     void FixedUpdate()
